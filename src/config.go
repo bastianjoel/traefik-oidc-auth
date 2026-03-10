@@ -55,6 +55,9 @@ type Config struct {
 	AuthorizationCookie  *AuthorizationCookieConfig `json:"authorization_cookie"`
 	UnauthorizedBehavior string                     `json:"unauthorized_behavior"`
 
+	UnauthorizedPassthrough     string `json:"unauthorized_passthrough"`
+	UnauthorizedPassthroughBool bool   `json:"unauthorized_passthrough_bool"`
+
 	Authorization *AuthorizationConfig `json:"authorization"`
 
 	Headers []HeaderConfig `json:"headers"`
@@ -165,9 +168,10 @@ func CreateConfig() *Config {
 			SameSite: "default",
 			MaxAge:   0,
 		},
-		AuthorizationHeader:  &AuthorizationHeaderConfig{},
-		AuthorizationCookie:  &AuthorizationCookieConfig{},
-		UnauthorizedBehavior: "Auto",
+		AuthorizationHeader:         &AuthorizationHeaderConfig{},
+		AuthorizationCookie:         &AuthorizationCookieConfig{},
+		UnauthorizedBehavior:        "Auto",
+		UnauthorizedPassthroughBool: false,
 		Authorization: &AuthorizationConfig{
 			CheckOnEveryRequest: false,
 		},
@@ -207,6 +211,10 @@ func New(uctx context.Context, next http.Handler, config *Config, name string) (
 	config.PostLogoutRedirectUri = utils.ExpandEnvironmentVariableString(config.PostLogoutRedirectUri)
 	config.CookieNamePrefix = utils.ExpandEnvironmentVariableString(config.CookieNamePrefix)
 	config.UnauthorizedBehavior = utils.ExpandEnvironmentVariableString(config.UnauthorizedBehavior)
+	config.UnauthorizedPassthroughBool, err = utils.ExpandEnvironmentVariableBoolean(config.UnauthorizedPassthrough, config.UnauthorizedPassthroughBool)
+	if err != nil {
+		return nil, err
+	}
 	config.BypassAuthenticationRule = utils.ExpandEnvironmentVariableString(config.BypassAuthenticationRule)
 	config.Provider.Url = utils.ExpandEnvironmentVariableString(config.Provider.Url)
 	config.Provider.ClientId = utils.ExpandEnvironmentVariableString(config.Provider.ClientId)
